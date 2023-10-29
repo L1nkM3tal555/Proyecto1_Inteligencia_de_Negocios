@@ -10,7 +10,7 @@ app = FastAPI()
 
 # Define el esquema para los datos de entrada
 class InputData(BaseModel):
-    features: list
+    text: str
 
 # Define la ruta para realizar predicciones
 @app.post('/predict/')
