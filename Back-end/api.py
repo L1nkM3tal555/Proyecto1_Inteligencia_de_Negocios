@@ -1,12 +1,21 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from joblib import load
+from fastapi.middleware.cors import CORSMiddleware
 
 # Cargar el modelo
 pipeline = load('C:/Users/ADMIN/Documents/Semestre 8/BI/Proyecto/Etapa 1/Proyecto1_Inteligencia_de_Negocios/Modelo predictivo/model.joblib')
 
 # FastAPI
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Agrega aquí el origen de tu aplicación React
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Define el esquema para los datos de entrada
 class InputData(BaseModel):
@@ -16,9 +25,12 @@ class InputData(BaseModel):
 @app.post('/predict/')
 def predict(data: InputData):
     try:
+        print(pipeline)
         # Realiza la predicción utilizando el pipeline cargado
         print(data.text)
-        prediction = pipeline.predict([data.text])[0]
+        prediction = pipeline.predict(data.text)
+        print(prediction)
+        print(prediction.estimators_)
         return {'prediction': prediction}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

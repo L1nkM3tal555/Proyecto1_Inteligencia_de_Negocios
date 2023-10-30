@@ -12,11 +12,12 @@ function App() {
   };
 
   const handleSubmit = async (e) => {
-    //e.preventDefault();
+    e.preventDefault();
     try {
+      console.log(inputText)
       const response = await fetch('http://192.168.0.7:8000/predict/', {
         method: 'POST',
-        mode: "no-cors",
+        mode: "cors",
         cache: "no-cache",
         credentials: "same-origin",
         headers: {
@@ -28,7 +29,7 @@ function App() {
       });
 
       const data = await response.json();
-      console.log(data.prediction)
+      console.log(response)
       setPrediction(data.prediction);
     } catch (error) {
       console.error('Error:', error);
