@@ -1,23 +1,55 @@
 import logo from './logo.svg';
 import './App.css';
 
+import React, { useState } from 'react';
+
 function App() {
+  const [inputText, setInputText] = useState('');
+  const [prediction, setPrediction] = useState(null);
+
+  const handleInputChange = (e) => {
+    setInputText(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:8000/predict/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: inputText })
+      });
+
+      const data = await response.json();
+      console.log(data.prediction)
+      setPrediction(data.prediction);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Clasificador de Texto</h1>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          rows="4"
+          cols="50"
+          value={inputText}
+          onChange={handleInputChange}
+          placeholder="Ingrese un texto..."
+        />
+        <br />
+        <button type="submit">Predecir</button>
+      </form>
+      {prediction !== null && (
+        <div>
+          <h2>Predicción:</h2>
+          <p>{prediction}</p>
+        </div>
+      )}
     </div>
   );
 }

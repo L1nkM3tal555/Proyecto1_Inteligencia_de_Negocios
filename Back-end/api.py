@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from joblib import load
 
 # Cargar el modelo
-pipeline = load('Modelo predictivo\model.joblib')
+pipeline = load('C:/Users/ADMIN/Documents/Semestre 8/BI/Proyecto/Etapa 1/Proyecto1_Inteligencia_de_Negocios/Modelo predictivo/model.joblib')
 
 # FastAPI
 app = FastAPI()
