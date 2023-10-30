@@ -17,10 +17,17 @@ class InputData(BaseModel):
 def predict(data: InputData):
     try:
         # Realiza la predicción utilizando el pipeline cargado
-        prediction = pipeline.predict([data.features])[0]
+        print(data.text)
+        prediction = pipeline.predict([data.text])[0]
         return {'prediction': prediction}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+#Ruta para ver los comentarios clasificados
+@app.get('/comentarios_clasificados/')
+def get_comentarios_clasificados():
+    comentarios = df.to_dict(orient='records')
+    return {'comentarios': comentarios}
 
 # Ejecuta la aplicación FastAPI
 if __name__ == '__main__':

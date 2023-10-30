@@ -12,13 +12,18 @@ function App() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    //e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/predict/', {
+      const response = await fetch('http://192.168.0.7:8000/predict/', {
         method: 'POST',
+        mode: "no-cors",
+        cache: "no-cache",
+        credentials: "same-origin",
         headers: {
           'Content-Type': 'application/json'
         },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
         body: JSON.stringify({ text: inputText })
       });
 
