@@ -4,10 +4,14 @@ from joblib import load
 from fastapi.middleware.cors import CORSMiddleware
 import re, string, unicodedata
 import spacy
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Cargar el modelo
-pipeline = load('C:/Users/ADMIN/Documents/Semestre 8/BI/Proyecto/Etapa 1/Proyecto1_Inteligencia_de_Negocios/Modelo predictivo/model.joblib')
+#data_M=pd.read_excel('./data/cat_345.xlsx')
+
+pipeline = load('Modelo predictivo/model.joblib')
+tokenizer = load('Modelo predictivo/tokenizer.joblib')
 nlp = spacy.load('es_core_news_sm')
 
 # FastAPI
@@ -65,9 +69,8 @@ def predict(data: InputData):
 
                     tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
 
-        norm = tokensIN.apply(lambda x: ' '.join(map(str, x)))
-        tf_idf = TfidfVectorizer(max_features=3000)
-        X_data = tf_idf.fit_transform(X_data)
+        norm = [' '.join(tokensIN)]
+        X_data = tokenizer.transform(norm)
 
 
 
