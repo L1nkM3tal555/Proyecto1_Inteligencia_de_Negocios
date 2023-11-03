@@ -15,7 +15,7 @@ function App() {
     e.preventDefault();
     try {
       console.log(inputText)
-      const response = await fetch('http://192.168.0.7:8000/predict/', {
+      const response = await fetch('http://localhost:8000/predict/', {
         method: 'POST',
         mode: "cors",
         cache: "no-cache",

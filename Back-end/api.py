@@ -28,19 +28,24 @@ def predict(data: InputData):
         print(pipeline)
         # Realiza la predicción utilizando el pipeline cargado
         print(data.text)
-        prediction = pipeline.predict(data.text)
+        prediction = pipeline.predict([data.text][0])
         print(prediction)
-        print(prediction.estimators_)
+        tfidf_estimators = prediction.estimators_
+        print(tfidf_estimators)
+        print("Number of trees:", len(tfidf_estimators))
+        
+        #print("Trees depth (mean):", np.mean([tree.get_depth() for tree in tfidf_estimators]))
+        
         return {'prediction': prediction}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+"""
 #Ruta para ver los comentarios clasificados
 @app.get('/comentarios_clasificados/')
 def get_comentarios_clasificados():
     comentarios = df.to_dict(orient='records')
     return {'comentarios': comentarios}
-
+"""
 # Ejecuta la aplicación FastAPI
 if __name__ == '__main__':
     import uvicorn
