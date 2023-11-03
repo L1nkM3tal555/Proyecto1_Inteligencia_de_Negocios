@@ -2,9 +2,13 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from joblib import load
 from fastapi.middleware.cors import CORSMiddleware
+import re, string, unicodedata
+import spacy
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Cargar el modelo
 pipeline = load('C:/Users/ADMIN/Documents/Semestre 8/BI/Proyecto/Etapa 1/Proyecto1_Inteligencia_de_Negocios/Modelo predictivo/model.joblib')
+nlp = spacy.load('es_core_news_sm')
 
 # FastAPI
 app = FastAPI()
@@ -21,14 +25,53 @@ app.add_middleware(
 class InputData(BaseModel):
     text: str
 
+def es_entero(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def es_float(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
 # Define la ruta para realizar predicciones
 @app.post('/predict/')
 def predict(data: InputData):
     try:
+        stop_words = nlp.Defaults.stop_words  #Stop words en español
         print(pipeline)
         # Realiza la predicción utilizando el pipeline cargado
-        print(data.text)
-        prediction = pipeline.predict([data.text][0])
+        
+        opinion = data.text
+        print(opinion)
+
+        opinionP = opinion.lower() #Se pone el texto en minusculas
+        opinionP = unicodedata.normalize('NFKD', opinionP).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+        #Se quitan caracteres especiales
+        opinionDoc = nlp(opinionP) #Se crea un doc con npl para procesar el texto
+        tokensIN = []
+        for word in opinionDoc:
+            wordP = re.sub(r'[^\w\s]', '', word.text) #Remover signos de puntuación
+            if wordP != '':
+                if ((((es_float(word.lemma_)) or (es_entero(word.lemma_))) != True) and (word.text not in stop_words)): #No se tienen en cuenta las stop words ni los digitos
+                    if(word.lemma_ == "15.7"):
+                        print(es_float(word.lemma_))
+                        print(es_entero(word.lemma_))
+
+                    tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
+
+        norm = tokensIN.apply(lambda x: ' '.join(map(str, x)))
+        tf_idf = TfidfVectorizer(max_features=3000)
+        X_data = tf_idf.fit_transform(X_data)
+
+
+
+        prediction = pipeline.predict(X_data)
         print(prediction)
         tfidf_estimators = prediction.estimators_
         print(tfidf_estimators)
