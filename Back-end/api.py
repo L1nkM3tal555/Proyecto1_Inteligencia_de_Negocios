@@ -7,6 +7,17 @@ import spacy
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+# FastAPI
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Agrega aquí el origen de tu aplicación React
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def es_entero(s):
     try:
         int(s)
@@ -65,17 +76,6 @@ X_data, Y_data = data_M['words'], data_M['sdg'].astype(int)
 tf_idf = TfidfVectorizer(max_features=3000)
 X_data = tf_idf.fit_transform(X_data)
 
-# FastAPI
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Agrega aquí el origen de tu aplicación React
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Define el esquema para los datos de entrada
 class InputData(BaseModel):
     text: str
@@ -96,17 +96,21 @@ def predict(data: InputData):
         tokensIN = prep_text(opinion, stop_words, nlp)
 
         norm = [' '.join(tokensIN)]
-        X_data = tokenizer.transform(norm)
+        X_data = tf_idf.transform(norm)
 
         prediction = pipeline.predict(X_data)
         print(prediction)
+        print(type(prediction[0]))
+        """
         tfidf_estimators = prediction.estimators_
         print(tfidf_estimators)
         print("Number of trees:", len(tfidf_estimators))
+        """
+        
         
         #print("Trees depth (mean):", np.mean([tree.get_depth() for tree in tfidf_estimators]))
         
-        return {'prediction': prediction}
+        return {'prediction': prediction[0].item()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 """
