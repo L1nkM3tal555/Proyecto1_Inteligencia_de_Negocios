@@ -7,12 +7,63 @@ import spacy
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+def es_entero(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+def es_float(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+    
+def prep_text(opinion: str,stop_words,nlp):
+    
+    opinionP = opinion.lower() #Se pone el texto en minusculas
+    opinionP = unicodedata.normalize('NFKD', opinionP).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+    #Se quitan caracteres especiales
+    opinionDoc = nlp(opinionP) #Se crea un doc con npl para procesar el texto
+    tokensIN = []
+    for word in opinionDoc:
+        wordP = re.sub(r'[^\w\s]', '', word.text) #Remover signos de puntuación
+        if wordP != '':
+            if ((((es_float(word.lemma_)) or (es_entero(word.lemma_))) != True) and (word.text not in stop_words)): #No se tienen en cuenta las stop words ni los digitos
+                if(word.lemma_ == "15"):
+                    print(es_float(word.lemma_))
+                    print(es_entero(word.lemma_))
+
+                tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
+    return tokensIN
+    
 # Cargar el modelo
-#data_M=pd.read_excel('./data/cat_345.xlsx')
+data_M=pd.read_excel('Modelo predictivo/data/cat_345.xlsx')
 
 pipeline = load('Modelo predictivo/model.joblib')
 tokenizer = load('Modelo predictivo/tokenizer.joblib')
 nlp = spacy.load('es_core_news_sm')
+
+stop_words = nlp.Defaults.stop_words  #Stop words en español
+
+texts = data_M['Textos_espanol']
+tokensN = []
+
+for opinion in texts:
+    tI = prep_text(opinion, stop_words, nlp)
+    tokensN.append(tI)
+
+data_M['words'] = pd.Series(tokensN, copy=False)
+
+data_M['words'] = data_M['words'].apply(lambda x: ' '.join(map(str, x)))
+
+X_data, Y_data = data_M['words'], data_M['sdg'].astype(int)
+
+#Vectorizer
+tf_idf = TfidfVectorizer(max_features=3000)
+X_data = tf_idf.fit_transform(X_data)
 
 # FastAPI
 app = FastAPI()
@@ -29,50 +80,23 @@ app.add_middleware(
 class InputData(BaseModel):
     text: str
 
-def es_entero(s):
-    try:
-        int(s)
-        return True
-    except ValueError:
-        return False
 
-def es_float(s):
-    try:
-        float(s)
-        return True
-    except ValueError:
-        return False
 
 # Define la ruta para realizar predicciones
 @app.post('/predict/')
 def predict(data: InputData):
     try:
-        stop_words = nlp.Defaults.stop_words  #Stop words en español
+        #stop_words = nlp.Defaults.stop_words  #Stop words en español
         print(pipeline)
         # Realiza la predicción utilizando el pipeline cargado
         
         opinion = data.text
         print(opinion)
 
-        opinionP = opinion.lower() #Se pone el texto en minusculas
-        opinionP = unicodedata.normalize('NFKD', opinionP).encode('ascii', 'ignore').decode('utf-8', 'ignore')
-        #Se quitan caracteres especiales
-        opinionDoc = nlp(opinionP) #Se crea un doc con npl para procesar el texto
-        tokensIN = []
-        for word in opinionDoc:
-            wordP = re.sub(r'[^\w\s]', '', word.text) #Remover signos de puntuación
-            if wordP != '':
-                if ((((es_float(word.lemma_)) or (es_entero(word.lemma_))) != True) and (word.text not in stop_words)): #No se tienen en cuenta las stop words ni los digitos
-                    if(word.lemma_ == "15.7"):
-                        print(es_float(word.lemma_))
-                        print(es_entero(word.lemma_))
-
-                    tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
+        tokensIN = prep_text(opinion, stop_words, nlp)
 
         norm = [' '.join(tokensIN)]
         X_data = tokenizer.transform(norm)
-
-
 
         prediction = pipeline.predict(X_data)
         print(prediction)
