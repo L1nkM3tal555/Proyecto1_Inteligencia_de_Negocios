@@ -113,13 +113,20 @@ def predict(data: InputData):
         return {'prediction': prediction[0].item()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-"""
+
 #Ruta para ver los comentarios clasificados
 @app.get('/comentarios_clasificados/')
-def get_comentarios_clasificados():
-    comentarios = df.to_dict(orient='records')
+def get_comentarios_clasificados(pred):
+    comentarios = None
+    if pred == "3":
+        comentarios = data_M.loc[data_M['sdg'] == '3'].to_dict
+    elif pred == "4":
+        comentarios = data_M.loc[data_M['sdg'] == '4'].to_dict
+    elif pred == "5":
+        comentarios = data_M.loc[data_M['sdg'] == '5'].to_dict
+
     return {'comentarios': comentarios}
-"""
+
 # Ejecuta la aplicación FastAPI
 if __name__ == '__main__':
     import uvicorn
