@@ -33,22 +33,28 @@ def es_float(s):
         return False
     
 def prep_text(opinion: str,stop_words,nlp):
+    try:
     
-    opinionP = opinion.lower() #Se pone el texto en minusculas
-    opinionP = unicodedata.normalize('NFKD', opinionP).encode('ascii', 'ignore').decode('utf-8', 'ignore')
-    #Se quitan caracteres especiales
-    opinionDoc = nlp(opinionP) #Se crea un doc con npl para procesar el texto
-    tokensIN = []
-    for word in opinionDoc:
-        wordP = re.sub(r'[^\w\s]', '', word.text) #Remover signos de puntuación
-        if wordP != '':
-            if ((((es_float(word.lemma_)) or (es_entero(word.lemma_))) != True) and (word.text not in stop_words)): #No se tienen en cuenta las stop words ni los digitos
-                if(word.lemma_ == "15"):
-                    print(es_float(word.lemma_))
-                    print(es_entero(word.lemma_))
+        opinionP = opinion.lower() #Se pone el texto en minusculas
+        
+        opinionP = unicodedata.normalize('NFKD', opinionP).encode('ascii', 'ignore').decode('utf-8', 'ignore')
+        #Se quitan caracteres especiales
+        opinionDoc = nlp(opinionP) #Se crea un doc con npl para procesar el texto
+        tokensIN = []
+        for word in opinionDoc:
+            wordP = re.sub(r'[^\w\s]', '', word.text) #Remover signos de puntuación
+            if wordP != '':
+                if ((((es_float(word.lemma_)) or (es_entero(word.lemma_))) != True) and (word.text not in stop_words)): #No se tienen en cuenta las stop words ni los digitos
+                    if(word.lemma_ == "15"):
+                        print(es_float(word.lemma_))
+                        print(es_entero(word.lemma_))
 
-                tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
-    return tokensIN
+                    tokensIN.append(word.lemma_) #Se toma en cuenta solo el lemma de la palabra
+        return tokensIN
+    except Exception as ex:
+        template = "An exception of type {0} occurred on the preparation of the texts. Arguments:\n{1!r}"
+        message = template.format(type(ex).__name__, ex.args)
+        print(message)
     
 # Cargar el modelo
 data_M=pd.read_excel('Modelo predictivo/data/cat_345.xlsx')
@@ -97,7 +103,7 @@ def predict(data: InputData):
 
         norm = [' '.join(tokensIN)]
         X_data = tf_idf.transform(norm)
-
+        print(X_data)
         prediction = pipeline.predict(X_data)
         print(prediction)
         print(type(prediction[0]))
@@ -112,6 +118,10 @@ def predict(data: InputData):
         
         return {'prediction': prediction[0].item()}
     except Exception as e:
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(e).__name__, e.args)
+        print(message)
+        print(e.__traceback__)
         raise HTTPException(status_code=500, detail=str(e))
 
 #Ruta para ver los comentarios clasificados

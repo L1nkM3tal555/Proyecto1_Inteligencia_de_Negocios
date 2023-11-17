@@ -1,38 +1,39 @@
-import logo from './logo.svg';
 import './App.css';
 
 import React, { useState } from 'react';
+
 
 function App() {
   const [inputText, setInputText] = useState('');
   const [prediction, setPrediction] = useState(null);
 
   const [comentarios, setComentarios] = useState([]);
+  
+  const handleComments = async (e) => {
+    console.log(e)
+    e.preventDefault();
+    try {
+      
+      const response = await fetch('http://localhost:8000/comentarios_clasificados/', {
+        method: 'GET',
+        mode: "cors",
+        cache: "no-cache",
+        credentials: "same-origin",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        redirect: "follow",
+        referrerPolicy: "no-referrer",
+        body: JSON.stringify({ pred: prediction })
+      });
 
-  useEffect(() => {
-    async function fetchComentarios() {
-      try {
-        const response = await fetch('http://localhost:8000/comentarios_clasificados/', {
-          method: 'GET',
-          mode: "cors",
-          cache: "no-cache",
-          credentials: "same-origin",
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          redirect: "follow",
-          referrerPolicy: "no-referrer",
-          body: JSON.stringify({ pred: prediction })
-        });
-        const data = await response.json();
-        setComentarios(data.comentarios);
-      } catch (error) {
-        console.error('Error:', error);
-      }
+      const data = await response.json();
+      console.log(response)
+      setComentarios(data.comentarios);
+    } catch (error) {
+      console.error('Error:', error);
     }
-
-    fetchComentarios();
-  }, []);
+  };
 
   const handleInputChange = (e) => {
     setInputText(e.target.value);
@@ -58,6 +59,7 @@ function App() {
       const data = await response.json();
       console.log(response)
       setPrediction(data.prediction);
+      
     } catch (error) {
       console.error('Error:', error);
     }
