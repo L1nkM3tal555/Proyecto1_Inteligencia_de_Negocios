@@ -9,12 +9,11 @@ function App() {
 
   const [comentarios, setComentarios] = useState([]);
   
-  const handleComments = async (e) => {
-    console.log(e)
-    e.preventDefault();
+  const handleComments = async (predictionValue) => {
+    
     try {
       
-      const response = await fetch('http://localhost:8000/comentarios_clasificados/', {
+      const response = await fetch('http://localhost:8000/comentarios_clasificados/?pred='+predictionValue, {
         method: 'GET',
         mode: "cors",
         cache: "no-cache",
@@ -24,7 +23,7 @@ function App() {
         },
         redirect: "follow",
         referrerPolicy: "no-referrer",
-        body: JSON.stringify({ pred: prediction })
+        
       });
 
       const data = await response.json();
@@ -59,7 +58,7 @@ function App() {
       const data = await response.json();
       console.log(response)
       setPrediction(data.prediction);
-      
+      handleComments(data.prediction);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -82,16 +81,16 @@ function App() {
       {prediction !== null && (
         <div>
           <h2>Predicción:</h2>
-          <p>{prediction}</p>
+          <p>Objetivo de desarrollo sostenible {prediction}</p>
         </div>
       )}
 
       <div>
-          <h1>Comentarios Clasificados</h1>
+          <h1>Comentarios con la misma clasificación</h1>
           <ul>
             {comentarios.map((comentario, index) => (
               <li key={index}>
-                <strong>Comentario:</strong> {comentario.comentario}, <strong>Clasificación:</strong> {comentario.clasificacion}
+                <strong>Comentario:</strong> {comentario}
               </li>
             ))}
           </ul>

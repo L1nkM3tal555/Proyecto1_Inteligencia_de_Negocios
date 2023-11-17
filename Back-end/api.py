@@ -81,6 +81,8 @@ X_data, Y_data = data_M['words'], data_M['sdg'].astype(int)
 #Vectorizer
 tf_idf = TfidfVectorizer(max_features=3000)
 X_data = tf_idf.fit_transform(X_data)
+#print(data_M)
+
 
 # Define el esquema para los datos de entrada
 class InputData(BaseModel):
@@ -127,14 +129,26 @@ def predict(data: InputData):
 #Ruta para ver los comentarios clasificados
 @app.get('/comentarios_clasificados/')
 def get_comentarios_clasificados(pred):
+    print(pred)
+    print(type(pred))
+    print(str(pred))
     comentarios = None
+    df_filtrado = data_M[data_M['sdg'] == int(pred)].head(5)
+    print(data_M['sdg'].dtype)
+    print(data_M['sdg'] == pred)
+    print(df_filtrado)
+    comentarios = df_filtrado['Textos_espanol'].tolist()
+    print(comentarios)
+    """
     if pred == "3":
         comentarios = data_M.loc[data_M['sdg'] == '3'].to_dict
+        print(data_M.loc[data_M['sdg'] == '3'])
     elif pred == "4":
         comentarios = data_M.loc[data_M['sdg'] == '4'].to_dict
     elif pred == "5":
         comentarios = data_M.loc[data_M['sdg'] == '5'].to_dict
-
+    print(comentarios)
+    """
     return {'comentarios': comentarios}
 
 # Ejecuta la aplicación FastAPI
